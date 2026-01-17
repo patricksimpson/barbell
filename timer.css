@@ -39,6 +39,9 @@
 
 /* Timer Display */
 .timer-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   margin: 2rem 0;
 }
 
@@ -57,6 +60,14 @@
 .timer-time.finished {
   color: #34c759;
   animation: pulse 0.5s ease-in-out 3;
+}
+
+.overtime-display {
+  display: none;
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: #ff3b30;
+  margin-top: 0.25rem;
 }
 
 @keyframes pulse {
@@ -251,6 +262,48 @@
 
 .lap-item.worst .lap-time {
   color: #ff3b30;
+}
+
+/* History Section */
+.history-section {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #ddd;
+}
+
+.history-heading {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #666;
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.625rem 0.75rem;
+  background: #f8f8f8;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.history-duration {
+  font-weight: 600;
+  color: #333;
+}
+
+.history-time {
+  font-size: 0.8rem;
+  color: #999;
 }
 
 /* Hidden state */

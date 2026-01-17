@@ -17,12 +17,10 @@
 <body>
   <div class="main">
     <!-- 1. Header with nav -->
-    <nav class="nav-links">
-      <a href="./index.html">Calculator</a>
+    <nav class="app-tabs">
+      <a href="./index.html">Barbell Calculator</a>
       <a href="./timer.html" class="active">Timer</a>
     </nav>
-
-    <h1 class="header">Timer</h1>
 
     <!-- 2. Mode Toggle -->
     <div class="mode-toggle">
@@ -33,12 +31,13 @@
     <!-- 3. Timer Display -->
     <div class="timer-display">
       <span class="timer-time" id="timer-display">00:00.00</span>
+      <span class="overtime-display" id="overtime-display"></span>
     </div>
 
     <!-- 4. Countdown Input (shown in countdown mode) -->
     <div class="countdown-input" id="countdown-input">
       <div class="time-input-group">
-        <input type="number" id="minutes-input" min="0" max="99" value="0" placeholder="0">
+        <input type="number" id="minutes-input" min="0" max="99" value="5" placeholder="0">
         <span class="time-label">min</span>
       </div>
       <span class="time-separator">:</span>
@@ -68,6 +67,12 @@
     <div class="laps-section" id="laps-section" style="display: none;">
       <h2 class="laps-heading">Laps</h2>
       <div class="laps-list" id="laps-list"></div>
+    </div>
+
+    <!-- 8. Timer History -->
+    <div class="history-section" id="history-section" style="display: none;">
+      <h2 class="history-heading">Recent Timers</h2>
+      <div class="history-list" id="history-list"></div>
     </div>
   </div>
 

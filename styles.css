@@ -18,38 +18,34 @@ body {
   text-align: center;
 }
 
-/* Navigation */
-.nav-links {
+/* 1. App Tabs Navigation */
+.app-tabs {
   display: flex;
   justify-content: center;
-  gap: 1.5rem;
-  margin-bottom: 0.5rem;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e5e5e5;
 }
 
-.nav-links a {
-  font-size: 0.875rem;
-  color: #666;
+.app-tabs a {
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: #999;
   text-decoration: none;
-  padding: 0.5rem 0;
+  padding: 0.25rem 0;
   border-bottom: 2px solid transparent;
   transition: color 0.2s, border-color 0.2s;
 }
 
-.nav-links a:hover {
-  color: #333;
-}
-
-.nav-links a.active {
-  color: #007aff;
-  border-bottom-color: #007aff;
-}
-
-/* 1. Header */
-.header {
-  font-size: 1.25rem;
+.app-tabs a.active {
   font-weight: 600;
   color: #333;
-  margin: 0.5rem 0 1.5rem;
+  border-bottom-color: #333;
+}
+
+.app-tabs a:not(.active):hover {
+  color: #666;
 }
 
 /* 2. Hero Input Section */

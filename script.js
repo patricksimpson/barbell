@@ -220,6 +220,16 @@ var _ = {
     }
   });
 
+  // Close modal with Escape key
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") {
+      var modal = document.querySelector(".plates-form--content");
+      if (modal.classList.contains("open")) {
+        togglePlateCalc();
+      }
+    }
+  });
+
   function toggleFractionalWeights() {
     useFractionalWeights = $("#use-fractional").is(":checked");
 

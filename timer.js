@@ -2,6 +2,8 @@
   'use strict';
 
   var STORAGE_KEY = 'timerState';
+  var HISTORY_KEY = 'timerHistory';
+  var MAX_HISTORY = 5;
 
   // State
   var mode = 'countdown'; // 'countdown' or 'stopwatch'
@@ -12,6 +14,8 @@
   var timerInterval = null;
   var laps = [];
   var lastLapTime = 0;
+  var isOvertime = false;
+  var overtimeStart = 0;
 
   // Separate state for each mode (to persist when switching)
   var countdownState = { elapsedTime: 0, countdownTarget: 0, startTime: 0, isRunning: false };
@@ -19,6 +23,7 @@
 
   // DOM Elements
   var timerDisplay = document.getElementById('timer-display');
+  var overtimeDisplay = document.getElementById('overtime-display');
   var minutesInput = document.getElementById('minutes-input');
   var secondsInput = document.getElementById('seconds-input');
   var countdownInputSection = document.getElementById('countdown-input');
@@ -29,6 +34,8 @@
   var lapsList = document.getElementById('laps-list');
   var modeButtons = document.querySelectorAll('.mode-btn');
   var presetButtons = document.querySelectorAll('.preset-btn');
+  var historySection = document.getElementById('history-section');
+  var historyList = document.getElementById('history-list');
 
   // Audio context for completion sound
   var audioContext = null;
@@ -108,6 +115,76 @@
     }
   }
 
+  // ============ Timer History ============
+
+  function saveToHistory(durationMs) {
+    try {
+      var history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+
+      history.unshift({
+        duration: durationMs,
+        completedAt: Date.now()
+      });
+
+      // Keep only last MAX_HISTORY entries
+      if (history.length > MAX_HISTORY) {
+        history = history.slice(0, MAX_HISTORY);
+      }
+
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    } catch (e) {
+      // Ignore
+    }
+  }
+
+  function loadHistory() {
+    try {
+      return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function formatDuration(ms) {
+    var totalSeconds = Math.floor(ms / 1000);
+    var minutes = Math.floor(totalSeconds / 60);
+    var seconds = totalSeconds % 60;
+
+    if (minutes > 0) {
+      return minutes + 'm ' + seconds + 's';
+    }
+    return seconds + 's';
+  }
+
+  function formatTimeAgo(timestamp) {
+    var seconds = Math.floor((Date.now() - timestamp) / 1000);
+
+    if (seconds < 60) return 'just now';
+    if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+    if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+    return Math.floor(seconds / 86400) + 'd ago';
+  }
+
+  function updateHistoryDisplay() {
+    var history = loadHistory();
+
+    if (history.length === 0) {
+      historySection.style.display = 'none';
+      return;
+    }
+
+    historySection.style.display = 'block';
+
+    var html = history.map(function(item) {
+      return '<div class="history-item">' +
+        '<span class="history-duration">' + formatDuration(item.duration) + '</span>' +
+        '<span class="history-time">' + formatTimeAgo(item.completedAt) + '</span>' +
+        '</div>';
+    }).join('');
+
+    historyList.innerHTML = html;
+  }
+
   // ============ Audio ============
 
   function initAudio() {
@@ -173,8 +250,9 @@
         displayTime = remaining;
 
         if (remaining === 0) {
+          var completedDuration = countdownTarget;
           stopTimer();
-          timerComplete();
+          timerComplete(completedDuration);
         }
       } else if (elapsedTime > 0) {
         // Paused countdown
@@ -195,21 +273,56 @@
     }
 
     timerDisplay.textContent = formatTime(displayTime);
+
+    // Update overtime display
+    if (isOvertime && overtimeStart > 0) {
+      var overtimeElapsed = Date.now() - overtimeStart;
+      overtimeDisplay.textContent = '+' + formatTime(overtimeElapsed, false);
+      overtimeDisplay.style.display = 'block';
+    } else {
+      overtimeDisplay.style.display = 'none';
+    }
   }
 
-  function timerComplete() {
+  function timerComplete(completedDuration) {
     timerDisplay.classList.add('finished');
     playCompletionSound();
+
+    // Save to history if we have a duration
+    if (completedDuration && completedDuration > 0) {
+      saveToHistory(completedDuration);
+      updateHistoryDisplay();
+    }
+
+    // Start overtime tracking
+    isOvertime = true;
+    overtimeStart = Date.now();
+
+    // Keep the interval running for overtime display
+    if (!timerInterval) {
+      timerInterval = setInterval(updateDisplay, 100);
+    }
 
     setTimeout(function() {
       timerDisplay.classList.remove('finished');
     }, 1500);
   }
 
+  function clearOvertime() {
+    isOvertime = false;
+    overtimeStart = 0;
+    if (overtimeDisplay) {
+      overtimeDisplay.style.display = 'none';
+    }
+  }
+
   // ============ Timer Controls ============
 
   function startTimer() {
     initAudio(); // Initialize audio on user interaction
+
+    // Clear overtime when starting a new timer
+    clearOvertime();
 
     if (mode === 'countdown') {
       if (elapsedTime > 0) {
@@ -252,6 +365,7 @@
     }
 
     clearInterval(timerInterval);
+    timerInterval = null;
     timerDisplay.classList.remove('running');
     startStopBtn.textContent = 'Start';
     startStopBtn.classList.remove('stop');
@@ -273,6 +387,8 @@
     startTime = 0;
 
     clearInterval(timerInterval);
+    timerInterval = null;
+    clearOvertime();
     timerDisplay.classList.remove('running', 'finished');
     startStopBtn.textContent = 'Start';
     startStopBtn.classList.remove('stop');
@@ -450,6 +566,11 @@
       lapResetBtn.textContent = 'Reset';
       minutesInput.disabled = false;
       secondsInput.disabled = false;
+
+      // Keep interval running for overtime display
+      if (isOvertime) {
+        timerInterval = setInterval(updateDisplay, 100);
+      }
     }
 
     saveToStorage();
@@ -462,6 +583,9 @@
       clearInterval(timerInterval);
       isRunning = false;
     }
+
+    // Clear overtime if active
+    clearOvertime();
 
     // Reset state
     elapsedTime = 0;
@@ -515,9 +639,10 @@
       var remaining = countdownTarget - elapsed;
       if (remaining <= 0) {
         // Timer completed while away
+        var completedDuration = countdownTarget;
         isRunning = false;
         elapsedTime = 0;
-        timerComplete();
+        timerComplete(completedDuration);
         saveToStorage();
       }
     }
@@ -672,9 +797,14 @@
 
       if (remaining <= 0) {
         // Countdown completed while we were in stopwatch mode
+        var completedDuration = countdownState.countdownTarget;
         countdownState.isRunning = false;
         countdownState.elapsedTime = 0;
         saveToStorage();
+
+        // Save to history
+        saveToHistory(completedDuration);
+        updateHistoryDisplay();
 
         playCompletionSound();
         showCountdownNotification();
@@ -690,4 +820,5 @@
   loadFromStorage();
   initializeUI();
   updateDisplay();
+  updateHistoryDisplay();
 })();
