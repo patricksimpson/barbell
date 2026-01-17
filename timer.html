@@ -37,12 +37,12 @@
     <!-- 4. Countdown Input (shown in countdown mode) -->
     <div class="countdown-input" id="countdown-input">
       <div class="time-input-group">
-        <input type="number" id="minutes-input" min="0" max="99" value="5" placeholder="0">
+        <input type="number" id="minutes-input" min="0" max="99" value="5" placeholder="0" inputmode="numeric" pattern="[0-9]*">
         <span class="time-label">min</span>
       </div>
       <span class="time-separator">:</span>
       <div class="time-input-group">
-        <input type="number" id="seconds-input" min="0" max="59" value="0" placeholder="0">
+        <input type="number" id="seconds-input" min="0" max="59" value="0" placeholder="0" inputmode="numeric" pattern="[0-9]*">
         <span class="time-label">sec</span>
       </div>
     </div>
