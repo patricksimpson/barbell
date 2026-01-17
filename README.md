@@ -1,6 +1,6 @@
 # Barbell Calculator
 
-Check it out her: [barbell.izerop.com](https://barbell.izerop.com)
+[barbell.izerop.com](https://barbell.izerop.com)
 
 A simple barbell plate calculator that helps you figure out which plates to load on each side of the bar to reach your target weight.
 
