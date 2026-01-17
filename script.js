@@ -526,6 +526,127 @@ var _ = {
     }
   };
 
+  // ============ Timer Monitoring ============
+  // Monitor countdown timer from the Timer page and alert when complete
+
+  var TIMER_STORAGE_KEY = 'timerState';
+  var timerAudioContext = null;
+  var timerCheckInterval = null;
+  var timerNotificationShown = false;
+
+  function initTimerAudio() {
+    if (!timerAudioContext) {
+      timerAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+  }
+
+  function playTimerCompletionSound() {
+    initTimerAudio();
+    if (!timerAudioContext) return;
+
+    // Play a pleasant chime sequence (same as timer page)
+    var frequencies = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+    var duration = 0.15;
+
+    frequencies.forEach(function(freq, i) {
+      var oscillator = timerAudioContext.createOscillator();
+      var gainNode = timerAudioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(timerAudioContext.destination);
+
+      oscillator.frequency.value = freq;
+      oscillator.type = 'sine';
+
+      var startAt = timerAudioContext.currentTime + (i * 0.15);
+      gainNode.gain.setValueAtTime(0.3, startAt);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, startAt + duration);
+
+      oscillator.start(startAt);
+      oscillator.stop(startAt + duration);
+    });
+  }
+
+  function showTimerNotification() {
+    // Don't show multiple notifications
+    if (timerNotificationShown) return;
+    timerNotificationShown = true;
+
+    // Create notification banner
+    var banner = document.createElement('div');
+    banner.className = 'timer-notification';
+    banner.innerHTML = '<span>Timer Complete!</span><a href="./timer.html">Go to Timer</a><button class="dismiss-btn">&times;</button>';
+    document.body.appendChild(banner);
+
+    // Trigger animation
+    setTimeout(function() {
+      banner.classList.add('show');
+    }, 10);
+
+    // Dismiss button
+    banner.querySelector('.dismiss-btn').addEventListener('click', function() {
+      banner.classList.remove('show');
+      setTimeout(function() {
+        banner.remove();
+        timerNotificationShown = false;
+      }, 300);
+    });
+
+    // Auto-dismiss after 10 seconds
+    setTimeout(function() {
+      if (banner.parentNode) {
+        banner.classList.remove('show');
+        setTimeout(function() {
+          if (banner.parentNode) banner.remove();
+          timerNotificationShown = false;
+        }, 300);
+      }
+    }, 10000);
+  }
+
+  function checkTimerCompletion() {
+    try {
+      var saved = localStorage.getItem(TIMER_STORAGE_KEY);
+      if (!saved) return;
+
+      var state = JSON.parse(saved);
+      var countdown = state.countdown;
+
+      // Check if countdown was running
+      if (countdown && countdown.isRunning && countdown.startTime > 0) {
+        var elapsed = Date.now() - countdown.startTime;
+        var remaining = countdown.countdownTarget - elapsed;
+
+        if (remaining <= 0) {
+          // Timer completed! Update the state and notify
+          countdown.isRunning = false;
+          countdown.elapsedTime = 0;
+
+          // Save updated state
+          localStorage.setItem(TIMER_STORAGE_KEY, JSON.stringify(state));
+
+          // Play sound and show notification
+          playTimerCompletionSound();
+          showTimerNotification();
+        }
+      }
+    } catch (e) {
+      // Ignore errors
+    }
+  }
+
+  // Start monitoring timer
+  function startTimerMonitoring() {
+    // Check immediately
+    checkTimerCompletion();
+
+    // Then check every second
+    timerCheckInterval = setInterval(checkTimerCompletion, 1000);
+  }
+
+  // Initialize timer monitoring
+  startTimerMonitoring();
+
   return {
     getWeights,
     clearSavedData,

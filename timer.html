@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Timer</title>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport" />
+  <meta name="description" content="A simple countdown timer and stopwatch with lap functionality.">
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./timer.css">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">
+  <link rel="icon" href="/favicon.ico">
+</head>
+
+<body>
+  <div class="main">
+    <!-- 1. Header with nav -->
+    <nav class="nav-links">
+      <a href="./index.html">Calculator</a>
+      <a href="./timer.html" class="active">Timer</a>
+    </nav>
+
+    <h1 class="header">Timer</h1>
+
+    <!-- 2. Mode Toggle -->
+    <div class="mode-toggle">
+      <button class="mode-btn active" data-mode="countdown">Countdown</button>
+      <button class="mode-btn" data-mode="stopwatch">Stopwatch</button>
+    </div>
+
+    <!-- 3. Timer Display -->
+    <div class="timer-display">
+      <span class="timer-time" id="timer-display">00:00.00</span>
+    </div>
+
+    <!-- 4. Countdown Input (shown in countdown mode) -->
+    <div class="countdown-input" id="countdown-input">
+      <div class="time-input-group">
+        <input type="number" id="minutes-input" min="0" max="99" value="0" placeholder="0">
+        <span class="time-label">min</span>
+      </div>
+      <span class="time-separator">:</span>
+      <div class="time-input-group">
+        <input type="number" id="seconds-input" min="0" max="59" value="0" placeholder="0">
+        <span class="time-label">sec</span>
+      </div>
+    </div>
+
+    <!-- 5. Quick Presets -->
+    <div class="quick-presets" id="quick-presets">
+      <button class="preset-btn" data-seconds="30">30s</button>
+      <button class="preset-btn" data-seconds="60">1m</button>
+      <button class="preset-btn" data-seconds="90">1:30</button>
+      <button class="preset-btn" data-seconds="120">2m</button>
+      <button class="preset-btn" data-seconds="180">3m</button>
+      <button class="preset-btn" data-seconds="300">5m</button>
+    </div>
+
+    <!-- 6. Controls -->
+    <div class="timer-controls">
+      <button class="control-btn secondary" id="lap-reset-btn">Reset</button>
+      <button class="control-btn primary" id="start-stop-btn">Start</button>
+    </div>
+
+    <!-- 7. Laps List -->
+    <div class="laps-section" id="laps-section" style="display: none;">
+      <h2 class="laps-heading">Laps</h2>
+      <div class="laps-list" id="laps-list"></div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    Built by <a href="https://github.com/patricksimpson">Patrick Simpson</a> | <a
+      href="https://github.com/patricksimpson/barbell">GitHub</a>
+  </footer>
+
+  <script src="timer.js"></script>
+</body>
+
+</html>
