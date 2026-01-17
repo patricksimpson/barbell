@@ -1,0 +1,543 @@
+/* Base styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+.main {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 1rem;
+  text-align: center;
+}
+
+/* 1. Header */
+.header {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0.5rem 0 1.5rem;
+}
+
+/* 2. Hero Input Section */
+.hero-input {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.lift-input {
+  font-size: 2rem;
+  font-weight: 600;
+  text-align: center;
+  width: 200px;
+  padding: 0.75rem 1rem;
+  border: 2px solid #ddd;
+  border-radius: 12px;
+  background: #fff;
+  transition: border-color 0.2s;
+}
+
+.lift-input:focus {
+  outline: none;
+  border-color: #007aff;
+}
+
+.lift-input::placeholder {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #999;
+}
+
+.unit-label {
+  font-size: 1.25rem;
+  color: #666;
+  font-weight: 500;
+}
+
+/* Error messages */
+.error {
+  color: #d32f2f;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+/* 3. Results Row */
+.results-row {
+  display: flex;
+  justify-content: space-around;
+  padding: 0.75rem 0;
+  margin-bottom: 1rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.result-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.result-label {
+  font-size: 0.75rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.result-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Remainder coloring */
+.remainder-1 { color: #f57c00; }
+.remainder-2 { color: #e65100; }
+.remainder-3 { color: #d84315; }
+.remainder-4 { color: #c62828; }
+
+/* 4. Bar Visualization */
+.bar-container {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0;
+}
+
+.bar {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  background-color: #333;
+  height: 4px;
+  margin: 90px auto;
+}
+
+.bar .side {
+  position: absolute;
+  width: 50%;
+  height: 100px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+}
+
+.bar .left-side {
+  right: calc(50% + 50px);
+  justify-content: flex-start;
+  flex-direction: row-reverse;
+}
+
+.bar .right-side {
+  left: calc(50% + 50px);
+  justify-content: flex-start;
+}
+
+.bar .side span {
+  width: 10px;
+  border: 1px solid #000;
+  margin: 0 1px;
+  flex-shrink: 0;
+}
+
+/* Plate sizes for bar */
+.bar .plate-45 {
+  height: 90px;
+  background-color: #333;
+}
+
+.bar .plate-35 {
+  height: 70px;
+  background-color: #555;
+}
+
+.bar .plate-25 {
+  height: 50px;
+  background-color: #777;
+}
+
+.bar .plate-10 {
+  height: 25px;
+  background-color: #999;
+}
+
+.bar .plate-5 {
+  height: 20px;
+  background-color: #bbb;
+}
+
+.bar .plate-2-5 {
+  height: 15px;
+  background-color: #ddd;
+}
+
+.bar .plate-1 {
+  height: 12px;
+  background-color: #e53935;
+}
+
+.bar .plate-0-75 {
+  height: 10px;
+  background-color: #00acc1;
+}
+
+.bar .plate-0-5 {
+  height: 8px;
+  background-color: #43a047;
+}
+
+.bar .plate-0-25 {
+  height: 6px;
+  background-color: #1e88e5;
+}
+
+/* 5. Plates Per Side (chips) */
+.plates-section {
+  margin: 1rem 0;
+}
+
+.plates-heading {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #666;
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.plates-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.clear-btn {
+  background: #f5f5f5;
+  color: #666;
+  border: 1px solid #ddd;
+  padding: 0.5rem 1.5rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.clear-btn:hover {
+  background: #eee;
+}
+
+.plate-chip {
+  display: none;
+  padding: 0.375rem 0.75rem;
+  background: #fff;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #333;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.chip-count {
+  font-weight: 700;
+}
+
+/* Chip colors matching bar plates */
+.plate-chip.plate-45 { background: #333; color: #fff; }
+.plate-chip.plate-35 { background: #555; color: #fff; }
+.plate-chip.plate-25 { background: #777; color: #fff; }
+.plate-chip.plate-10 { background: #999; color: #fff; }
+.plate-chip.plate-5 { background: #bbb; color: #333; }
+.plate-chip.plate-2-5 { background: #ddd; color: #333; }
+.plate-chip.plate-1 { background: #e53935; color: #fff; }
+.plate-chip.plate-0-75 { background: #00acc1; color: #fff; }
+.plate-chip.plate-0-5 { background: #43a047; color: #fff; }
+.plate-chip.plate-0-25 { background: #1e88e5; color: #fff; }
+
+/* 6. Settings Section */
+.settings-section {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #ddd;
+}
+
+.settings-toggle {
+  background: #333;
+  color: #fff;
+  border: none;
+  padding: 0.625rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.settings-toggle:hover {
+  background: #444;
+}
+
+.settings-toggle.show {
+  background: #007aff;
+}
+
+/* Modal overlay */
+.settings-content {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.settings-content.open {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 2rem;
+}
+
+.modal-inner {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  text-align: left;
+  width: 100%;
+  max-width: 400px;
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  color: #333;
+}
+
+.modal-body {
+  padding: 1rem;
+}
+
+/* Totals row */
+.totals-row {
+  display: flex;
+  justify-content: space-around;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  background: #f8f8f8;
+  border-radius: 8px;
+}
+
+.total-item {
+  text-align: center;
+}
+
+.total-label {
+  font-size: 0.75rem;
+  color: #666;
+  display: block;
+}
+
+.total-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Setting groups */
+.setting-group {
+  margin-bottom: 1rem;
+}
+
+.setting-group label {
+  font-size: 0.875rem;
+  color: #333;
+}
+
+.setting-heading {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 0.5rem;
+}
+
+/* Inventory grid */
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.inventory-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.inventory-item label {
+  width: 2.5rem;
+  text-align: right;
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.inventory-item input {
+  width: 3rem;
+  padding: 0.375rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+/* Bar weight input */
+.setting-group > input[type="number"] {
+  width: 4rem;
+  padding: 0.375rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  text-align: center;
+  margin-left: 0.5rem;
+}
+
+/* Fractional plates */
+.fractional-plates {
+  display: none;
+}
+
+/* Options row */
+.options-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #333;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+}
+
+.clear-amounts {
+  background: #f5f5f5;
+  color: #666;
+  border: 1px solid #ddd;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.clear-amounts:hover {
+  background: #eee;
+}
+
+/* Responsive adjustments */
+@media (min-width: 600px) {
+  .main {
+    padding: 2rem;
+  }
+
+  .header {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .lift-input {
+    font-size: 2.5rem;
+    width: 250px;
+  }
+
+  .bar {
+    max-width: 400px;
+  }
+}
+
+/* iOS safe area */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Input type number - remove spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Footer */
+.site-footer {
+  text-align: center;
+  padding: 2rem 1rem;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.site-footer a {
+  color: #666;
+  text-decoration: none;
+}
+
+.site-footer a:hover {
+  color: #333;
+  text-decoration: underline;
+}
