@@ -292,6 +292,8 @@ button {
 
 .plate-chip {
   display: none;
+  align-items: center;
+  justify-content: center;
   padding: 0.5rem 0.85rem;
   min-height: 36px;
   background: #fff;

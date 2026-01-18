@@ -16,9 +16,18 @@
   var lastLapTime = 0;
   var isOvertime = false;
   var overtimeStart = 0;
+  var countdownFinished = false;
+  var lastCountdownDuration = 0;
 
   // Separate state for each mode (to persist when switching)
-  var countdownState = { elapsedTime: 0, countdownTarget: 0, startTime: 0, isRunning: false };
+  var countdownState = {
+    elapsedTime: 0,
+    countdownTarget: 0,
+    startTime: 0,
+    isRunning: false,
+    finished: false,
+    lastDuration: 0
+  };
   var stopwatchState = { elapsedTime: 0, laps: [], lastLapTime: 0, startTime: 0, isRunning: false };
 
   // DOM Elements
@@ -49,6 +58,8 @@
       countdownState.countdownTarget = countdownTarget;
       countdownState.startTime = startTime;
       countdownState.isRunning = isRunning;
+      countdownState.finished = countdownFinished;
+      countdownState.lastDuration = lastCountdownDuration;
     } else {
       stopwatchState.elapsedTime = elapsedTime;
       stopwatchState.laps = laps;
@@ -78,7 +89,14 @@
       var state = JSON.parse(saved);
 
       // Restore mode states
-      countdownState = state.countdown || { elapsedTime: 0, countdownTarget: 0, startTime: 0, isRunning: false };
+      countdownState = state.countdown || {
+        elapsedTime: 0,
+        countdownTarget: 0,
+        startTime: 0,
+        isRunning: false,
+        finished: false,
+        lastDuration: 0
+      };
       stopwatchState = state.stopwatch || { elapsedTime: 0, laps: [], lastLapTime: 0, startTime: 0, isRunning: false };
 
       // Set current mode
@@ -90,6 +108,8 @@
         countdownTarget = countdownState.countdownTarget;
         startTime = countdownState.startTime;
         isRunning = countdownState.isRunning;
+        countdownFinished = countdownState.finished || false;
+        lastCountdownDuration = countdownState.lastDuration || 0;
         laps = [];
         lastLapTime = 0;
       } else {
@@ -240,6 +260,28 @@
     return formatted;
   }
 
+  function updateCountdownInputs(durationMs) {
+    if (!minutesInput || !secondsInput) return;
+
+    var totalSeconds = Math.max(0, Math.floor(durationMs / 1000));
+    var minutes = Math.floor(totalSeconds / 60);
+    var seconds = totalSeconds % 60;
+
+    minutesInput.value = minutes;
+    secondsInput.value = seconds;
+  }
+
+  function updateOvertimeDisplay() {
+    if (isOvertime && overtimeStart > 0) {
+      var overtimeElapsed = Date.now() - overtimeStart;
+      overtimeDisplay.textContent = '+' + formatTime(overtimeElapsed, false);
+      overtimeDisplay.style.visibility = 'visible';
+    } else {
+      overtimeDisplay.textContent = '';
+      overtimeDisplay.style.visibility = 'hidden';
+    }
+  }
+
   function updateDisplay() {
     var displayTime;
 
@@ -258,10 +300,14 @@
         // Paused countdown
         displayTime = elapsedTime;
       } else {
-        // Not started - show input time
-        var mins = parseInt(minutesInput.value) || 0;
-        var secs = parseInt(secondsInput.value) || 0;
-        displayTime = (mins * 60 + secs) * 1000;
+        // Not started - show input time or keep at 0 after completion
+        if (countdownFinished) {
+          displayTime = 0;
+        } else {
+          var mins = parseInt(minutesInput.value) || 0;
+          var secs = parseInt(secondsInput.value) || 0;
+          displayTime = (mins * 60 + secs) * 1000;
+        }
       }
     } else {
       // Stopwatch mode
@@ -273,20 +319,25 @@
     }
 
     timerDisplay.textContent = formatTime(displayTime);
-
-    // Update overtime display
-    if (isOvertime && overtimeStart > 0) {
-      var overtimeElapsed = Date.now() - overtimeStart;
-      overtimeDisplay.textContent = '+' + formatTime(overtimeElapsed, false);
-      overtimeDisplay.style.display = 'block';
-    } else {
-      overtimeDisplay.style.display = 'none';
-    }
+    updateOvertimeDisplay();
   }
 
   function timerComplete(completedDuration) {
-    timerDisplay.classList.add('finished');
+    timerDisplay.classList.add('finished', 'completed');
     playCompletionSound();
+
+    countdownFinished = true;
+    lastCountdownDuration = completedDuration || lastCountdownDuration;
+    countdownTarget = completedDuration || countdownTarget;
+    elapsedTime = 0;
+
+    if (lastCountdownDuration > 0) {
+      updateCountdownInputs(lastCountdownDuration);
+    }
+
+    countdownState.finished = countdownFinished;
+    countdownState.lastDuration = lastCountdownDuration;
+    countdownState.elapsedTime = 0;
 
     // Save to history if we have a duration
     if (completedDuration && completedDuration > 0) {
@@ -294,13 +345,11 @@
       updateHistoryDisplay();
     }
 
-    // Start overtime tracking
+    // Start overtime tracking while keeping main display at 0
     isOvertime = true;
     overtimeStart = Date.now();
-
-    // Keep the interval running for overtime display
     if (!timerInterval) {
-      timerInterval = setInterval(updateDisplay, 100);
+      timerInterval = setInterval(updateOvertimeDisplay, 100);
     }
 
     setTimeout(function() {
@@ -312,7 +361,8 @@
     isOvertime = false;
     overtimeStart = 0;
     if (overtimeDisplay) {
-      overtimeDisplay.style.display = 'none';
+      overtimeDisplay.textContent = '';
+      overtimeDisplay.style.visibility = 'hidden';
     }
   }
 
@@ -325,6 +375,11 @@
     clearOvertime();
 
     if (mode === 'countdown') {
+      if (countdownFinished) {
+        countdownFinished = false;
+        countdownState.finished = false;
+      }
+
       if (elapsedTime > 0) {
         // Resuming paused countdown
         countdownTarget = elapsedTime;
@@ -342,6 +397,7 @@
     isRunning = true;
     startTime = Date.now();
     timerDisplay.classList.add('running');
+    timerDisplay.classList.remove('completed');
     startStopBtn.textContent = 'Stop';
     startStopBtn.classList.add('stop');
     lapResetBtn.textContent = mode === 'stopwatch' ? 'Lap' : 'Reset';
@@ -354,12 +410,54 @@
     timerInterval = setInterval(updateDisplay, 10);
   }
 
+    function setPreset(seconds) {
+    // Stop any running timer first
+    if (isRunning) {
+      clearInterval(timerInterval);
+      isRunning = false;
+    }
+
+    // Clear overtime if active
+    clearOvertime();
+
+    // Reset state
+    elapsedTime = 0;
+    countdownTarget = seconds * 1000;
+    countdownFinished = false;
+    lastCountdownDuration = countdownTarget;
+
+    // Update input fields
+    updateCountdownInputs(countdownTarget);
+
+    // Start the countdown immediately
+    isRunning = true;
+    startTime = Date.now();
+    timerDisplay.classList.add('running');
+    timerDisplay.classList.remove('completed');
+    startStopBtn.textContent = 'Stop';
+    startStopBtn.classList.add('stop');
+    lapResetBtn.textContent = 'Reset';
+
+    // Disable manual inputs while running (but keep presets enabled for quick restart)
+    minutesInput.disabled = true;
+    secondsInput.disabled = true;
+
+    initAudio();
+    saveToStorage();
+    timerInterval = setInterval(updateDisplay, 10);
+  }
+
   function stopTimer() {
     isRunning = false;
 
     if (mode === 'countdown') {
       var elapsed = Date.now() - startTime;
       elapsedTime = Math.max(0, countdownTarget - elapsed);
+      if (elapsedTime > 0) {
+        countdownFinished = false;
+        countdownState.finished = false;
+        timerDisplay.classList.remove('completed');
+      }
     } else {
       elapsedTime += Date.now() - startTime;
     }
@@ -385,11 +483,12 @@
     lastLapTime = 0;
     laps = [];
     startTime = 0;
+    countdownFinished = false;
 
     clearInterval(timerInterval);
     timerInterval = null;
     clearOvertime();
-    timerDisplay.classList.remove('running', 'finished');
+    timerDisplay.classList.remove('running', 'finished', 'completed');
     startStopBtn.textContent = 'Start';
     startStopBtn.classList.remove('stop');
     lapResetBtn.textContent = 'Reset';
@@ -400,7 +499,18 @@
 
     // Also reset the stored state for current mode
     if (mode === 'countdown') {
-      countdownState = { elapsedTime: 0, countdownTarget: 0, startTime: 0, isRunning: false };
+      countdownState = {
+        elapsedTime: 0,
+        countdownTarget: 0,
+        startTime: 0,
+        isRunning: false,
+        finished: false,
+        lastDuration: lastCountdownDuration
+      };
+
+      if (lastCountdownDuration > 0) {
+        updateCountdownInputs(lastCountdownDuration);
+      }
     } else {
       stopwatchState = { elapsedTime: 0, laps: [], lastLapTime: 0, startTime: 0, isRunning: false };
     }
@@ -480,6 +590,8 @@
       countdownState.countdownTarget = countdownTarget;
       countdownState.startTime = startTime;
       countdownState.isRunning = isRunning;
+      countdownState.finished = countdownFinished;
+      countdownState.lastDuration = lastCountdownDuration;
     } else {
       stopwatchState.elapsedTime = elapsedTime;
       stopwatchState.laps = laps.slice();
@@ -495,8 +607,20 @@
       countdownTarget = countdownState.countdownTarget;
       startTime = countdownState.startTime;
       isRunning = countdownState.isRunning;
+      countdownFinished = countdownState.finished || false;
+      lastCountdownDuration = countdownState.lastDuration || countdownTarget || 0;
       laps = [];
       lastLapTime = 0;
+
+      if (lastCountdownDuration > 0) {
+        updateCountdownInputs(lastCountdownDuration);
+      }
+
+      if (countdownFinished && !isRunning) {
+        timerDisplay.classList.add('completed');
+      } else {
+        timerDisplay.classList.remove('completed');
+      }
 
       // Check if countdown finished while we were in stopwatch mode
       if (isRunning && startTime > 0) {
@@ -508,7 +632,9 @@
           countdownState.isRunning = false;
           countdownState.elapsedTime = 0;
           // Play completion sound after a brief delay
-          setTimeout(timerComplete, 100);
+          setTimeout(function() {
+            timerComplete(countdownTarget || lastCountdownDuration);
+          }, 100);
         }
       }
     } else {
@@ -518,6 +644,7 @@
       startTime = stopwatchState.startTime;
       isRunning = stopwatchState.isRunning;
       countdownTarget = 0;
+      timerDisplay.classList.remove('completed');
     }
   }
 
@@ -553,6 +680,7 @@
     // Update UI based on running state
     if (isRunning) {
       timerDisplay.classList.add('running');
+      timerDisplay.classList.remove('completed');
       startStopBtn.textContent = 'Stop';
       startStopBtn.classList.add('stop');
       lapResetBtn.textContent = mode === 'stopwatch' ? 'Lap' : 'Reset';
@@ -569,7 +697,7 @@
 
       // Keep interval running for overtime display
       if (isOvertime) {
-        timerInterval = setInterval(updateDisplay, 100);
+        timerInterval = setInterval(updateOvertimeDisplay, 100);
       }
     }
 
@@ -577,44 +705,8 @@
     updateDisplay();
   }
 
-  function setPreset(seconds) {
-    // Stop any running timer first
-    if (isRunning) {
-      clearInterval(timerInterval);
-      isRunning = false;
-    }
-
-    // Clear overtime if active
-    clearOvertime();
-
-    // Reset state
-    elapsedTime = 0;
-    countdownTarget = seconds * 1000;
-
-    // Update input fields
-    var mins = Math.floor(seconds / 60);
-    var secs = seconds % 60;
-    minutesInput.value = mins;
-    secondsInput.value = secs;
-
-    // Start the countdown immediately
-    isRunning = true;
-    startTime = Date.now();
-    timerDisplay.classList.add('running');
-    startStopBtn.textContent = 'Stop';
-    startStopBtn.classList.add('stop');
-    lapResetBtn.textContent = 'Reset';
-
-    // Disable manual inputs while running (but keep presets enabled for quick restart)
-    minutesInput.disabled = true;
-    secondsInput.disabled = true;
-
-    initAudio();
-    saveToStorage();
-    timerInterval = setInterval(updateDisplay, 10);
-  }
-
   // ============ Initialization ============
+
 
   function initializeUI() {
     // Update mode buttons
@@ -627,6 +719,10 @@
       countdownInputSection.style.display = 'flex';
       quickPresetsSection.style.display = 'flex';
       lapsSection.style.display = 'none';
+
+      if (lastCountdownDuration > 0) {
+        updateCountdownInputs(lastCountdownDuration);
+      }
     } else {
       countdownInputSection.style.display = 'none';
       quickPresetsSection.style.display = 'none';
@@ -800,6 +896,8 @@
         var completedDuration = countdownState.countdownTarget;
         countdownState.isRunning = false;
         countdownState.elapsedTime = 0;
+        countdownState.finished = true;
+        countdownState.lastDuration = completedDuration;
         saveToStorage();
 
         // Save to history
